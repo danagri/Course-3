@@ -1,11 +1,19 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Feedback, ContactType } from '../shared/feedback';
+import { flyInOut } from '../animations/app.animation';
 
 @Component({
   selector: 'app-contact',
   templateUrl: './contact.component.html',
-  styleUrls: ['./contact.component.scss']
+  styleUrls: ['./contact.component.scss'],
+  host: {
+    '[@flyInOut]': 'true',
+    'style': 'display: block;'
+  },
+  animations: [
+    flyInOut()
+  ]
 })
 export class ContactComponent implements OnInit {
 
@@ -65,7 +73,7 @@ export class ContactComponent implements OnInit {
       .subscribe(data => {
         this.onValueChanged(data);
       });
-    this.onValueChanged(); //reset form validation messages
+    this.onValueChanged(); 
   }
 
   onValueChanged(data?: any) {
@@ -75,7 +83,6 @@ export class ContactComponent implements OnInit {
     const form = this.feedbackForm;
     for(const field in this.formErrors) {
       if(this.formErrors.hasOwnProperty(field)) {
-        //clear previous error message (if any)
         this.formErrors[field] = '';
         const control = form.get(field);
         if(control && control.dirty && !control.valid) {
@@ -104,5 +111,4 @@ export class ContactComponent implements OnInit {
     });
     this.feedbackFormDirective.resetForm();
   }
-
 }

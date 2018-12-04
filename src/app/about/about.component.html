@@ -1,14 +1,10 @@
-<div class="container"
-  fxLayout="column"
-  fxLayoutGap="10px">
-
+<div class="container" fxLayout="column" fxLayoutGap="10px">
   <div fxFlex>
     <div>
         <h3>About Us</h3>
         <hr>
     </div>
   </div>
-
   <div fxFlex>
     <div fxLayout="column" fxLayout.gt-sm="row">
       <div fxFlex="70">
@@ -39,7 +35,6 @@
       </div>
     </div>
   </div>
-  
   <div fxFlex>
     <mat-card>
       <blockquote>
@@ -52,11 +47,8 @@
       </blockquote>
     </mat-card>
   </div>
-
-
- 
   <div fxFlex>
-    <mat-list *ngIf="leaders">    
+    <mat-list *ngIf="leaders" [@expand]>  
       <h2 matLine>Corporate Leadership</h2>
       <mat-list-item *ngFor="let leader of leaders">
           <img matListAvatar src="{{leader.image}}" alt={{leader.name}}>
@@ -76,5 +68,4 @@
       <h3>Loading . . . Please Wait</h3>
     </div>
   </div>
-  
 </div>

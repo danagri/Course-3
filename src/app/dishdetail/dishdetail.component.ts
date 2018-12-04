@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject } from '@angular/core';
 import { Params, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Dish } from '../shared/dish';
@@ -6,10 +6,21 @@ import { DishService } from '../services/dish.service';
 import { switchMap } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Comment } from '../shared/comment';
+import { visibility, flyInOut, expand } from '../animations/app.animation';
+
 @Component({
   selector: 'app-dishdetail',
   templateUrl: './dishdetail.component.html',
-  styleUrls: ['./dishdetail.component.scss']
+  styleUrls: ['./dishdetail.component.scss'],
+  host: {
+    '[@flyInOut]': 'true',
+    'style': 'display: block;'
+  },
+  animations: [
+    flyInOut(),
+    visibility(),
+    expand()
+  ]
 })
 export class DishdetailComponent implements OnInit {
 
@@ -18,9 +29,12 @@ export class DishdetailComponent implements OnInit {
   @ViewChild('cform') commentFormDirective;
 
   dish: Dish;
+  errMess: string;
   dishIds: string[];
   prev: string;
   next: string;
+  dishCopy: Dish;
+  visibility = 'shown';
 
   formErrors = {
     'author': '',
@@ -40,7 +54,8 @@ export class DishdetailComponent implements OnInit {
   constructor(private dishService: DishService,
     private route: ActivatedRoute,
     private location: Location,
-    private fb: FormBuilder) { 
+    private fb: FormBuilder,
+    @Inject('BaseURL') private BaseURL) { 
       this.createForm();
     }
 
@@ -86,25 +101,42 @@ export class DishdetailComponent implements OnInit {
     this.comment = this.commentForm.value;
     this.comment.date = new Date().toISOString();
     console.log(this.comment);
+    this.dishCopy.comments.push(this.comment);
+    this.dishService.putDish(this.dishCopy)
+    .subscribe(dish => {
+      this.dish = dish;
+      this.dishCopy = dish;
+    },
+    errmess => {
+      this.dish = null;
+      this.dishCopy = null;
+      this.errMess = <any>errmess;
+    });
+    this.commentFormDirective.resetForm();
     this.commentForm.reset({
       rating: 1,
       comment: '',
       author: '',      
       date: ''
     });
-    this.commentFormDirective.resetForm();
-    this.dish.comments.push(this.comment);
+   
   }
 
   ngOnInit() {
    this.dishService.getDishIds()
     .subscribe(dishIds => this.dishIds = dishIds);
    this.route.params
-    .pipe(switchMap((params: Params) => this.dishService.getDish(params['id'])))
+    .pipe(switchMap((params: Params) => {
+      this.visibility = 'hidden';
+      return this.dishService.getDish(params['id']);
+    }))
     .subscribe(dish => { 
       this.dish = dish; 
+      this.dishCopy = dish;
       this.setPrevNext(dish.id);
-    });
+      this.visibility = 'shown';
+    }, 
+    errmess => this.errMess = <any>errmess);
   }
 
   setPrevNext(dishId: string) {
